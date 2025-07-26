@@ -79,8 +79,8 @@ python -m app.main google
 python -m app.main ollama
 ```
 
-## Architectural Decision Records (ADRs)
+## Docs
 
-This project uses Architectural Decision Records (ADRs) to document significant decisions made during its development. These records provide context and reasoning for the architectural choices, serving as a learning history for the project.
+These records provide context and reasoning, serving as a learning history for the project.
 
-You can find the ADRs in the [`docs/adr`](docs/adr) directory.
+You can find the docs [`here`](docs).
