@@ -48,7 +48,7 @@ Ollama needs to be running and accessible over the network. **Open a terminal** 
 OLLAMA_HOST=0.0.0.0 ollama serve
 ```
 
-*(Note: The syntax for setting environment variables may vary slightly between shells. For example, in Windows PowerShell, the command would be `$env:OLLAMA_HOST="0.0.0.0"; ollama serve`)*
+**(Note: The syntax for setting environment variables may vary slightly between shells. For example, in Windows PowerShell, the command would be `$env:OLLAMA_HOST="0.0.0.0"; ollama serve`)**
 
 **Keep this terminal window open.** It is your LLM server.
 
