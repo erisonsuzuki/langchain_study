@@ -1,11 +1,12 @@
 import os
-from langchain_openai import ChatOpenAI
+from langchain_ollama import ChatOllama
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
 # 1. Set up the model
-# By default, it uses the OPENAI_API_KEY environment variable
-llm = ChatOpenAI(model="gpt-3.5-turbo")
+# Make sure you have an Ollama server running.
+# By default, it connects to http://localhost:11434
+llm = ChatOllama(model="llama3")
 
 # 2. Create a prompt template
 # This will guide the model's response
