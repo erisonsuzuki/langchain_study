@@ -1,0 +1,14 @@
+# LLM parameters. Can be overridden per task.
+default:
+  temperature: 0.2
+  top_p: 1.0
+
+tasks:
+  planning:
+    temperature: 0.4 # More creativity for planning.
+  documentation:
+    temperature: 0.1 # More factual for documentation.
+  analysis:
+    temperature: 0.0 # Deterministic for analysis.
+  editing:
+    temperature: 0.0
