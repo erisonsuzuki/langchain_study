@@ -1,8 +1,5 @@
 # Assistente de Desenvolvimento de IA (AIaaS)
 
-[](https://github.com)
-[](https://opensource.org/licenses/MIT)
-
 Este projeto implementa um "Assistente de IA como um Serviço" Dockerizado. Ele expõe várias capacidades de automação de desenvolvimento (análise de código, geração de documentação, planejamento de features, etc.) através de uma API RESTful, utilizando FastAPI.
 
 O sistema foi projetado para ser **agnóstico ao provedor de LLM**, permitindo o uso de modelos locais via **Ollama** ou provedores de nuvem como **OpenAI**, **Google Gemini** e **Anthropic** através de um sistema de configuração flexível e hierárquico.
@@ -53,7 +50,7 @@ Siga estes passos para colocar o assistente no ar.
 2.  **Ollama** instalado localmente (se for usar modelos locais).
 3.  **Git** para clonar o repositório.
 
-### 1\. Configuração do Ambiente
+### 1. Configuração do Ambiente
 
 Primeiro, clone o repositório e configure seu ambiente local.
 
@@ -69,7 +66,7 @@ cp .env.example .env
 nano .env
 ```
 
-### 2\. Iniciando o Servidor com Ollama (se aplicável)
+### 2. Iniciando o Servidor com Ollama (se aplicável)
 
 Se for usar modelos locais, abra um terminal **separado** e inicie o serviço do Ollama para que ele aceite conexões de rede.
 
@@ -77,7 +74,7 @@ Se for usar modelos locais, abra um terminal **separado** e inicie o serviço do
 OLLAMA_HOST=0.0.0.0 ollama serve
 ```
 
-### 3\. Construindo e Iniciando o Assistente de IA
+### 3. Construindo e Iniciando o Assistente de IA
 
 Com o `Makefile`, este processo é muito simples.
 

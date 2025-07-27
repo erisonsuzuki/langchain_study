@@ -1,8 +1,5 @@
 # AI Development Assistant (AIaaS)
 
-[](https://github.com)
-[](https://opensource.org/licenses/MIT)
-
 This project implements a Dockerized "AI Assistant as a Service". It exposes various development automation capabilities (code analysis, documentation generation, feature planning, etc.) through a RESTful API, using FastAPI and local LLMs via Ollama.
 
 The tool is designed to be a portable, private, and highly customizable development assistant that can be integrated into various workflows, such as CI/CD pipelines, bots, or called directly via the command line.

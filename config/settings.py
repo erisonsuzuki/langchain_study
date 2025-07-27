@@ -1,4 +1,3 @@
-# config/settings.py
 import os
 import yaml
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -27,7 +26,6 @@ def get_prompt_template_for_task(task_name: str) -> ChatPromptTemplate:
 def get_llm_settings_for_task(task_name: str) -> dict:
     default_settings = LLM_SETTINGS_CONFIG.get("default", {})
     task_settings = LLM_SETTINGS_CONFIG.get("tasks", {}).get(task_name, {})
-    # Create a copy of defaults and update with task-specific settings
     final_settings = default_settings.copy()
     final_settings.update(task_settings)
     return final_settings
@@ -35,14 +33,13 @@ def get_llm_settings_for_task(task_name: str) -> dict:
 def get_llm_instance(provider: str, model_name: str, llm_settings: dict) -> BaseChatModel:
     provider_upper = provider.upper()
     
-    # Ensure API keys are set in the environment for cloud providers
     os.environ.setdefault("OPENAI_API_KEY", os.getenv("OPENAI_API_KEY", ""))
     os.environ.setdefault("GOOGLE_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
     os.environ.setdefault("ANTHROPIC_API_KEY", os.getenv("ANTHROPIC_API_KEY", ""))
 
     match provider_upper:
         case "OLLAMA":
-            from langchain_community.chat_models import ChatOllama
+            from langchain_ollama import ChatOllama
             base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
             return ChatOllama(model=model_name, base_url=base_url, **llm_settings)
         case "OPENAI":

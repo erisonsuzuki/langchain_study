@@ -1,145 +1,122 @@
-# Assistente de Desenvolvimento de IA (AIaaS)
+# AI Developer Assistant (AIaaS) - Final Version
 
-[](https://github.com)
-[](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Este projeto implementa um "Assistente de IA como um Serviço" Dockerizado. Ele expõe várias capacidades de automação de desenvolvimento (análise de código, geração de documentação, planejamento de features, etc.) através de uma API RESTful, utilizando FastAPI.
+This project implements a Dockerized "AI Assistant as a Service". It exposes various development automation capabilities (code analysis, documentation generation, feature planning, and code editing) through a RESTful API, using FastAPI.
 
-O sistema foi projetado para ser **agnóstico ao provedor de LLM**, permitindo o uso de modelos locais via **Ollama** ou provedores de nuvem como **OpenAI**, **Google Gemini** e **Anthropic** através de um sistema de configuração flexível e hierárquico.
+The system is designed to be LLM provider-agnostic, allowing the use of local models via **Ollama** or cloud providers like **OpenAI**, **Google Gemini**, and **Anthropic** through a flexible configuration system.
 
-## Arquitetura e Conceitos Chave
+## Architecture and Core Concepts
 
-A arquitetura foi desenhada para ser modular, configurável e extensível, baseada nos seguintes pilares:
+The architecture is designed to be modular, configurable, and extensible, based on the following pillars:
 
-  * **API-First com FastAPI:** O núcleo do projeto é um servidor web que expõe todas as funcionalidades através de uma API RESTful, permitindo que qualquer serviço, script ou ferramenta interaja com o assistente.
-  * **Contêinerização com Docker:** A aplicação inteira é empacotada em uma imagem Docker, garantindo um ambiente de execução consistente e portátil, eliminando problemas de dependência entre máquinas.
-  * **LLM Factory Agóstica:** Uma camada de abstração (`config/settings.py`) permite que a aplicação solicite uma instância de LLM sem se preocupar com qual provedor (Ollama, OpenAI, etc.) está sendo usado. A seleção é feita dinamicamente com base em arquivos de configuração.
-  * **Configuração Externalizada:**
-      * **`.env`**: Gerencia segredos (chaves de API) e a seleção do provedor/modelo padrão.
-      * **`prompts/`**: Todos os prompts são mantidos como arquivos `.md` individuais, permitindo fácil edição por qualquer pessoa da equipe, sem tocar no código.
-      * **`config/llm_settings.yaml`**: Controla os parâmetros finos dos LLMs (como `temperature`) para cada tipo de tarefa.
-  * **Interface de Comando com `Makefile`**: Um `Makefile` na raiz do projeto serve como um "painel de controle", oferecendo comandos simples e memoráveis para tarefas complexas como construir a imagem Docker, iniciar o servidor e interagir com a API.
+- **API-First with FastAPI:** The project's core is a web server that exposes all functionalities through a RESTful API.
+- **Containerization with Docker:** The entire application is packaged into a Docker image, ensuring a consistent and portable execution environment.
+- **Provider-Agnostic LLM Factory:** An abstraction layer in `config/settings.py` allows the application to dynamically use different LLM providers (Ollama, OpenAI, etc.).
+- **Externalized Configuration:** Prompts (`prompts/*.md`), LLM parameters (`config/llm_settings.yaml`), and secrets (`.env`) are all managed outside the source code for maximum flexibility.
+- **Development Environment with Volume Mount:** The development mode (`make start-dev`) mounts the local project inside the container, allowing the AI agents to read and modify your files in real-time.
+- **Command Interface with `Makefile`**: A `Makefile` serves as a "control panel," offering simple and memorable commands for complex tasks.
 
-## Estrutura do Projeto
-
-```
-/assistente_ia_final
-├── Makefile              # Painel de controle com comandos simples (make start, make plan)
-├── Dockerfile            # Receita para construir a imagem Docker do servidor da API
-├── .env.example          # Arquivo de exemplo para configuração de ambiente
-├── .gitignore            # Especifica arquivos a serem ignorados pelo Git
-├── .pre-commit-config.yaml # Configuração para hooks de Git (qualidade de código)
-├── README.md             # Esta documentação
-├── requirements.txt      # Lista de dependências Python do projeto
-├── api_main.py           # O servidor FastAPI, ponto de entrada da API
-├── config/                 # Módulo de configuração central
-│   ├── llm_settings.yaml # Parâmetros dos LLMs (temperature, etc.)
-│   └── settings.py       # Lógica para carregar configs, prompts e criar instâncias de LLMs
-├── prompts/                # Diretório contendo todos os prompts
-│   ├── analysis.md       # Prompt para a tarefa de análise de código
-│   ├── documentation.md  # Prompt para a tarefa de geração de documentação
-│   └── planning.md       # Prompt para a tarefa de planejamento de features
-└── scripts/
-    └── api_client.py     # Cliente de linha de comando para interagir com a API
-```
-
-## Instalação e Execução
-
-Siga estes passos para colocar o assistente no ar.
-
-### Pré-requisitos
-
-1.  **Docker** instalado e em execução.
-2.  **Ollama** instalado localmente (se for usar modelos locais).
-3.  **Git** para clonar o repositório.
-
-### 1\. Configuração do Ambiente
-
-Primeiro, clone o repositório e configure seu ambiente local.
+## Project Structure
 
 ```bash
-# Clone o projeto (se aplicável)
-# git clone ...
-# cd assistente_ia_final
+/ai_developer_assistant
+├── Makefile              # Control panel with simple commands
+├── Dockerfile            # Recipe to build the API's Docker image
+├── .env.example          # Example file for environment configuration
+├── README.md             # This documentation
+├── requirements.txt      # List of project's Python dependencies
+├── api_main.py           # The FastAPI server, API's entry point
+├── config/               # Central configuration module
+│   ├── llm_settings.yaml # LLM parameters (temperature, etc.)
+│   └── settings.py       # Logic to load configs and create LLM instances
+├── prompts/              # Directory containing all prompts in .md format
+│   └── ...
+├── scripts/              # Scripts with task logic and the API client
+│   └── ...
+└── tools/                # Tools for the AI agents
+    └── ...
+```
 
-# 1. Crie seu arquivo de ambiente a partir do exemplo
+## Setup and Execution
+
+Follow these steps to get the assistant up and running.
+
+### 1. Environment Configuration
+
+First, prepare your local environment.
+
+```bash
+# 1. Copy the example environment file
 cp .env.example .env
 
-# 2. Edite o .env para adicionar suas chaves de API e configurar os modelos padrão
+# 2. Edit the .env file to add your API keys and configure default models
 nano .env
 ```
 
-### 2\. Iniciando o Servidor com Ollama (se aplicável)
+### 2. Starting the Ollama Server (Optional)
 
-Se for usar modelos locais, abra um terminal **separado** e inicie o serviço do Ollama para que ele aceite conexões de rede.
+If you plan to use local models, open a **separate** terminal and start the Ollama service.
 
 ```bash
 OLLAMA_HOST=0.0.0.0 ollama serve
 ```
 
-### 3\. Construindo e Iniciando o Assistente de IA
+### 3. Building the Docker Image
 
-Com o `Makefile`, este processo é muito simples.
+This step only needs to be run once, or whenever you change the source code or dependencies.
 
 ```bash
-# Construa a imagem Docker. Isso só precisa ser feito uma vez ou quando o código mudar.
 make build
+```
 
-# Inicie o servidor em segundo plano (modo "detached")
+### 4. Starting the API Server
+
+You have two ways to start the server, depending on your needs.
+
+#### Standard API Mode (`make start-d`)
+
+Use this mode for tasks that **do not** need to modify your local files, such as feature planning or simple analysis.
+
+```bash
 make start-d
-
-# Verifique os logs para garantir que tudo iniciou corretamente
-make logs
 ```
 
-Seu "Assistente de IA como um Serviço" agora está rodando e acessível em `http://localhost:8000`.
+#### Development Mode for Agents (`make start-dev`)
 
-## Como Usar as Funcionalidades
-
-A maneira mais fácil de interagir com o projeto é através dos comandos `make`. Para ver todos os comandos disponíveis, execute:
+Use this command when you will be running tasks that need to **read and write to your project files**, like the code editing agent.
 
 ```bash
-make help
+make start-dev
 ```
 
-### Exemplos de Comandos
+This command starts the server and mounts your current project directory into the container at `/app/workspace`.
 
-#### Planejar uma Nova Feature
+## Usage
+
+With the server running, open a **new terminal** and use the `make` commands to interact with the API. To see all available commands, type `make help`.
+
+### Example 1: Plan a Feature (any server mode)
 
 ```bash
-make plan desc="Adicionar um sistema de notificações por email para novos pedidos"
+make plan desc="Add an email notification system for new orders"
 ```
 
-Este comando envia a descrição para o endpoint `/plan-feature` da sua API, que usará o modelo configurado para planejamento e retornará um plano técnico detalhado.
+### Example 2: Edit Code with the Agent
 
-#### Gerar Documentação de um Projeto
-
-Para usar esta funcionalidade, você precisa rodar o contêiner montando o volume do projeto que deseja documentar. O `Makefile` pode ser adaptado para isso, mas uma chamada direta ao `docker` ilustra o conceito:
+**Prerequisite:** The server must have been started with `make start-dev`.
 
 ```bash
-# Pare o servidor atual se estiver rodando
-make stop
-
-# Inicie o servidor montando o projeto alvo na pasta /target_project
-docker run -d --rm -p 8000:8000 --env-file ./.env \
-  -v "/caminho/completo/para/seu/outro/projeto:/target_project" \
-  --name ai_assistant_server \
-  assistente-ia:latest
-
-# Agora, chame o comando 'make'
-make docs path="/target_project"
+make edit instruction="Refactor the User class in src/models.py to use Pydantic instead of dataclasses"
 ```
 
-#### Parar o Servidor
+The agent will now operate on the files on your host machine, applying the changes directly.
+
+### Stopping the Server
+
+To stop the container running in the background:
 
 ```bash
 make stop
 ```
-
-## Configuração Avançada
-
-A flexibilidade do assistente vem da sua capacidade de configuração externa.
-
-  * **`prompts/*.md`**: Para mudar o comportamento de uma tarefa, simplesmente edite o arquivo de prompt correspondente. Por exemplo, para fazer o planejador de features mais ou menos detalhado, edite o `prompts/planning.md`. Não é necessário reiniciar o servidor.
-  * **`config/llm_settings.yaml`**: Para ajustar a "criatividade" (temperatura) ou outros parâmetros de um modelo para uma tarefa específica, edite este arquivo.
-  * **`.env`**: Este arquivo controla tudo. Você pode mudar o provedor padrão de `OLLAMA` para `OPENAI` alterando a variável `DEFAULT_PROVIDER`. Você pode forçar uma tarefa específica a usar um modelo diferente definindo, por exemplo, `DOCS_MODEL_IDENTIFIER=GEMINI:gemini-1.5-pro`. O sistema aplicará as mudanças na próxima vez que o contêiner for iniciado.

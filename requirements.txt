@@ -3,9 +3,13 @@ uvicorn
 pydantic
 PyYAML
 requests
+# LangChain Core & Ollama
 langchain
+langchain-ollama
 langchain-community
-ollama
+# Cloud Provider Libraries
 langchain-openai
 langchain-google-genai
 langchain-anthropic
+# For Agents
+langchainhub
