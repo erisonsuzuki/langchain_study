@@ -1,88 +1,53 @@
-from fastapi import FastAPI, HTTPException
+# api_main.py
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import Optional
+from typing import Dict, Any
 
-from config.settings import (
-    resolve_model_for_task,
-    get_llm_settings_for_task,
-    get_llm_instance,
-    get_prompt_template_for_task
-)
+from core.exceptions import ServiceExecutionError
 
-from scripts.task_planner import run_smart_feature_planning
-from scripts.doc_generator import run_scalable_doc_generation
-from scripts.code_analyzer import run_code_analysis
-from scripts.code_editor import run_editing_agent
+# --- Task Registry ---
+from services.planning_service import PlanningService, PlanRequest
+from services.docs_service import DocsService, DocsRequest
+from services.analysis_service import AnalysisService, AnalyzeRequest
+from services.editing_service import EditingService, EditRequest
 
-# --- Data Models for API Requests (Pydantic) ---
-class BaseRequest(BaseModel):
-    model: Optional[str] = None # e.g., "OPENAI:gpt-4o"
+TASK_REGISTRY = {
+    "planning": (PlanningService, PlanRequest),
+    "documentation": (DocsService, DocsRequest),
+    "analysis": (AnalysisService, AnalyzeRequest),
+    "editing": (EditingService, EditRequest),
+}
 
-class PlanRequest(BaseRequest):
-    description: str
+# --- Generic Request Models ---
+class GenericTaskRequest(BaseModel):
+    model: str | None = None
+    data: Dict[str, Any]
 
-class DocsRequest(BaseRequest):
-    project_path: str
-
-class AnalyzeRequest(BaseRequest):
-    file_path: str
-
-class EditRequest(BaseRequest):
-    instruction: str
-    project_path: str = "/app/workspace"
-
+# --- FastAPI App Instance and Handlers ---
 app = FastAPI(
-    title="AI Developer Assistant (Final Version)",
-    description="A provider-agnostic API to automate complex development tasks.",
-    version="final"
+    title="Generic AI Task Assistant (SOLID)",
+    version="10.0"
 )
 
-async def _get_task_llm(task_name: str, model_override: Optional[str] = None):
-    provider, model_name = resolve_model_for_task(task_name, model_override)
-    llm_settings = get_llm_settings_for_task(task_name)
-    llm = get_llm_instance(provider, model_name, llm_settings)
-    return llm, f"{provider}:{model_name}"
+@app.exception_handler(ServiceExecutionError)
+async def service_exception_handler(request: Request, exc: ServiceExecutionError):
+    return JSONResponse(
+        status_code=500,
+        content={"error": "An internal error occurred during task execution.", "detail": exc.message},
+    )
 
-@app.get("/", summary="Check server status")
-def read_root():
-    return {"status": "AI Assistant is online."}
+@app.post("/tasks/{task_name}", summary="Executes any registered AI task", tags=["Tasks"])
+async def execute_task(task_name: str, request: GenericTaskRequest):
+    if task_name not in TASK_REGISTRY:
+        return JSONResponse(status_code=404, content={"error": f"Task '{task_name}' not found."})
 
-@app.post("/plan-feature", summary="Create a smart, contextual plan for a new feature")
-async def plan_feature_endpoint(request: PlanRequest):
+    ServiceClass, RequestModel = TASK_REGISTRY[task_name]
     try:
-        llm, model_used = await _get_task_llm("planning", request.model)
-        prompt = get_prompt_template_for_task("planning_classifier")
-        
-        plan = run_smart_feature_planning(llm, prompt, request.description)
-        
-        return {"plan": plan, "model_used": model_used}
+        task_data = RequestModel(**request.data)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return JSONResponse(status_code=422, content={"error": "Invalid data for the specified task.", "detail": str(e)})
 
-@app.post("/generate-docs", summary="Generate scalable documentation for a project")
-async def generate_docs_endpoint(request: DocsRequest):
-    try:
-        llm, model_used = await _get_task_llm("documentation", request.model)
-        docs_content = run_scalable_doc_generation(llm, request.project_path)
-        return {"docs_generated": docs_content, "model_used": model_used}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/analyze-code", summary="Analyze a code file for best practices")
-async def analyze_code_endpoint(request: AnalyzeRequest):
-    try:
-        llm, model_used = await _get_task_llm("analysis", request.model)
-        prompt = get_prompt_template_for_task("analysis")
-        analysis_result, analysis_passed = run_code_analysis(llm, prompt, request.file_path)
-        return {"analysis": analysis_result, "passed": analysis_passed, "model_used": model_used}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-        
-@app.post("/edit-code-agent", summary="Run an autonomous agent to edit code")
-async def edit_code_agent_endpoint(request: EditRequest):
-    try:
-        llm, model_used = await _get_task_llm("editing", request.model)
-        result = run_editing_agent(llm, request.instruction, request.project_path)
-        return {"agent_output": result, "model_used": model_used}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    service_instance = ServiceClass(task_name)
+    result = service_instance.execute(model_override=request.model, **task_data.dict())
+    return result

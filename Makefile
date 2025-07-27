@@ -1,58 +1,74 @@
-# Makefile (Final version with Docker networking and CURDIR fix)
+# --- Variáveis de Configuração ---
+# --- .env Loader ---
+ifneq (,$(wildcard ./.env))
+    include ./.env
+    export
+endif
 
 # --- Configuration Variables ---
 IMAGE_NAME := ai-assistant
 IMAGE_TAG := final
 CONTAINER_NAME := ai_assistant_server
+API_CLIENT := python scripts/api_client.py
+
+# --- Workspace Configuration Logic (Hierarchy) ---
+WORKSPACE_PATH := $(or $(path),$(AI_ASSISTANT_WORKSPACE),$(HOME))
 
 # --- Docker Lifecycle Commands ---
-.PHONY: build start-d stop logs start-dev
-
+.PHONY: build start start-d stop logs
 build: ## Build the Docker image for the application.
-	@echo "--> Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}..."
+	@echo "Building Docker image: ${IMAGE_NAME}:${IMAGE_TAG}..."
 	@docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
 
-start-dev: ## Start the dev server with the current project mounted as a workspace.
-	@echo "--> Starting AI Assistant dev server..."
+start-d: ## Start the server in detached mode, mounting a workspace.
+	@echo "Starting AI Assistant server in detached mode..."
+	@echo "Mapping host path '${WORKSPACE_PATH}' to '/workspace' inside the container."
 	@docker run -d --rm -p 8000:8000 --env-file ./.env \
 	  --add-host=host.docker.internal:host-gateway \
-	  -v "$(CURDIR):/app/workspace" \
 	  --name ${CONTAINER_NAME} ${IMAGE_NAME}:${IMAGE_TAG}
 
-start-d: ## Start the standard API server in detached mode.
-	@echo "--> Starting AI Assistant server in detached mode..."
+start-dev: ## Start the server in detached mode, mounting a workspace.
+	@echo "Starting AI Assistant server in detached mode..."
+	@echo "Mapping host path '${WORKSPACE_PATH}' to '/workspace' inside the container."
 	@docker run -d --rm -p 8000:8000 --env-file ./.env \
 	  --add-host=host.docker.internal:host-gateway \
+	  -v "${WORKSPACE_PATH}:/workspace" \
+	  --name ${CONTAINER_NAME} ${IMAGE_NAME}:${IMAGE_TAG}
+
+start: ## Start the API server in the foreground, mounting a workspace.
+	@echo "Starting AI Assistant server..."
+	@echo "Mapping host path '${WORKSPACE_PATH}' to '/workspace' inside the container."
+	@docker run --rm -p 8000:8000 --env-file ./.env \
+	  --add-host=host.docker.internal:host-gateway \
+	  -v "${WORKSPACE_PATH}:/workspace" \
 	  --name ${CONTAINER_NAME} ${IMAGE_NAME}:${IMAGE_TAG}
 
 stop: ## Stop the detached API server container.
-	@echo "--> Stopping AI Assistant server..."
-	@docker stop ${CONTAINER_NAME} || true
+	@echo "Stopping AI Assistant server..."
+	@docker stop ${CONTAINER_NAME}
 
 logs: ## Follow the logs of the detached server.
-	@echo "--> Showing logs for AI Assistant server..."
+	@echo "Showing logs for AI Assistant server..."
 	@docker logs -f ${CONTAINER_NAME}
 
-# --- API Task Commands ---
-.PHONY: plan docs analyze edit check_task
+# --- API Task Commands (User-Friendly Facade) ---
+.PHONY: plan docs analyze edit task
+
 plan: ## Plan a new feature. Usage: make plan desc="Your feature description".
-	@echo "--> Running feature planning..."
-	@python scripts/api_client.py plan "${desc}"
-docs: ## Generate documentation. Usage: make docs path="/app/workspace".
-	@echo "--> Running documentation generation for path: ${path}..."
-	@python scripts/api_client.py docs "${path}"
-analyze: ## Analyze a specific file. Usage: make analyze file="/app/workspace/some_file.py".
-	@echo "--> Running code analysis for file: ${file}..."
-	@python scripts/api_client.py analyze "${file}"
+	@echo "Running feature planning..."
+	@${API_CLIENT} planning '{"description": "${desc}"}' $(if ${model},--model ${model},)
+
+docs: ## Generate documentation. Usage: make docs path="/workspace/src".
+	@echo "Running documentation generation for path: ${path}..."
+	@${API_CLIENT} documentation '{"project_path": "${path}"}' $(if ${model},--model ${model},)
+
+analyze: ## Analyze a specific file. Usage: make analyze file="/workspace/src/main.py".
+	@echo "Running code analysis for file: ${file}..."
+	@${API_CLIENT} analysis '{"file_path": "${file}"}' $(if ${model},--model ${model},)
+
 edit: ## Instruct the AI agent to edit code. Usage: make edit instruction="Your instruction".
-	@echo "--> Dispatching code editing agent..."
-	@python scripts/api_client.py edit "${instruction}"
-check_task: ## Check the status of a submitted task. Usage: make check_task task_id="your-task-id".
-	@if [ -z "${task_id}" ]; then \
-		echo "Error: Please provide a task_id (e.g., make check_task task_id=...)" && exit 1; \
-	fi
-	@echo "--> Checking status for task: ${task_id}"
-	@curl -s http://localhost:8000/tasks/${task_id} | python -m json.tool
+	@echo "Dispatching code editing agent..."
+	@${API_CLIENT} editing '{"instruction": "${instruction}"}' $(if ${model},--model ${model},)
 
 # --- Help Command ---
 .PHONY: help

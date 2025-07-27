@@ -22,4 +22,4 @@ EXPOSE 8000
 
 # O comando que será executado quando o contêiner iniciar.
 # Inicia o servidor web Uvicorn, apontando para o objeto 'app' dentro do arquivo 'api_main.py'.
-CMD ["uvicorn", "api_main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api_main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
