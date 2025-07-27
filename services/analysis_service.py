@@ -1,8 +1,8 @@
 # services/analysis_service.py
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 import os
-from langchain_core.output_parsers import StrOutputParser
+from langchain_core.output_parsers import PydanticOutputParser
 
 from .base_service import AbstractTaskService
 from core.exceptions import ServiceExecutionError
@@ -13,11 +13,16 @@ from config.settings import (
     get_prompt_template_for_task,
 )
 
+# --- Pydantic Models ---
 class AnalyzeRequest(BaseModel):
     file_path: str
 
+class AnalysisResult(BaseModel):
+    analysis_markdown: str = Field(description="A summary of the code analysis, formatted in Markdown.")
+    passed: bool = Field(description="Whether the code passed the quality check.")
+
+# --- Service Implementation ---
 class AnalysisService(AbstractTaskService):
-    """Service responsible for the code analysis task."""
     def __init__(self, task_name: str = "analysis"):
         self.task_name = task_name
 
@@ -33,13 +38,17 @@ class AnalysisService(AbstractTaskService):
             provider, model_name = resolve_model_for_task(self.task_name, model_override)
             llm_settings = get_llm_settings_for_task(self.task_name)
             llm = get_llm_instance(provider, model_name, llm_settings)
+            
+            parser = PydanticOutputParser(pydantic_object=AnalysisResult)
             prompt = get_prompt_template_for_task(self.task_name)
             
-            chain = prompt | llm | StrOutputParser()
-            analysis = chain.invoke({"language": language, "code": source_code})
+            # The prompt now needs to be told how to determine the 'passed' boolean.
+            # We'll add this instruction to the chain's input.
+            chain = prompt.partial(format_instructions=parser.get_format_instructions()) | llm | parser
 
-            passed = "FAILED" not in analysis.upper()
-            return {"analysis": analysis, "passed": passed, "model_used": f"{provider}:{model_name}"}
+            analysis_result_object = chain.invoke({"language": language, "code": source_code})
+
+            return {"analysis": analysis_result_object.dict(), "model_used": f"{provider}:{model_name}"}
         except FileNotFoundError:
              raise ServiceExecutionError(message=f"File not found at path: {file_path}")
         except Exception as e:

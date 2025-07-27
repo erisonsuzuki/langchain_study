@@ -23,7 +23,7 @@ build: ## Build the Docker image for the application.
 start-d: ## Start the server in detached mode, mounting a workspace.
 	@echo "Starting AI Assistant server in detached mode..."
 	@echo "Mapping host path '${WORKSPACE_PATH}' to '/workspace' inside the container."
-	@docker run -d --rm -p 8000:8000 --env-file ./.env \
+	@docker run -d --rm -p 0.0.0.0:8000:8000 --env-file ./.env \
 	  --add-host=host.docker.internal:host-gateway \
 	  --name ${CONTAINER_NAME} ${IMAGE_NAME}:${IMAGE_TAG}
 
@@ -38,7 +38,7 @@ start-dev: ## Start the server in detached mode, mounting a workspace.
 start: ## Start the API server in the foreground, mounting a workspace.
 	@echo "Starting AI Assistant server..."
 	@echo "Mapping host path '${WORKSPACE_PATH}' to '/workspace' inside the container."
-	@docker run --rm -p 8000:8000 --env-file ./.env \
+	@docker run --rm -p 0.0.0.0:8000:8000 --env-file ./.env \
 	  --add-host=host.docker.internal:host-gateway \
 	  -v "${WORKSPACE_PATH}:/workspace" \
 	  --name ${CONTAINER_NAME} ${IMAGE_NAME}:${IMAGE_TAG}
