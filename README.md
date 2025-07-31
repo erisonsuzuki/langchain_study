@@ -1,136 +1,110 @@
 # AI Developer Assistant (AIaaS)
 
-[](https://github.com)
-[](https://opensource.org/licenses/MIT)
-
 A Dockerized, multi-provider AI assistant that automates complex development tasks like feature planning, documentation generation, and code analysis via a simple and powerful API.
 
-## Key Features
+-----
 
-  - 💡 **Intelligent Tasks:** Plan features, generate documentation, and analyze code using advanced LangChain patterns (Conditional Chains, Agents, MapReduce).
-  - 🔌 **Provider Agnostic:** Seamlessly switch between local models (Ollama) and cloud providers (OpenAI, Gemini, Anthropic) via simple configuration.
+## ✨ About The Project
+
+This project was designed to be your **personal AI assistant for software development**. The core idea is to provide a powerful yet easy-to-use tool that automates repetitive and complex tasks, allowing you to focus on the main logic of your code.
+
+With the `AI Developer Assistant`, you can:
+
+  - **Generate technical plans** for new features from a high-level description.
+  - **Create documentation** for your projects and code files.
+  - **Analyze your code** for best practices and potential improvements.
+  - **Run autonomous tasks** for refactoring or editing files.
+
+The project was built to be **provider-agnostic**, meaning you can use it with local language models (via Ollama) to ensure privacy and reduce costs, or with powerful cloud models (OpenAI, Gemini) for maximum performance. All of this is managed consistently and portably with Docker.
+
+-----
+
+## 💡 Features
+
+  - 💡 **Intelligent Tasks:** Plan features, generate documentation, and analyze code using advanced AI patterns with LangChain (Conditional Chains, Agents, MapReduce).
+  - 🔌 **Provider Agnostic:** Seamlessly switch between local models (Ollama) and cloud providers (OpenAI, Gemini, Anthropic) with a simple configuration.
   - 🔧 **Highly Configurable:** Control models, prompts, and LLM parameters (`temperature`, etc.) through external `.env` and `.yaml` files.
   - 📦 **Dockerized:** Get started in minutes with a consistent, portable, and isolated environment.
   - 👨‍💻 **Simple CLI Interface:** Use a clean `Makefile` as a control panel for all common operations.
 
-## Tech Stack
+-----
+
+## 🛠️ Technologies
 
   - **Backend:** FastAPI
   - **AI Orchestration:** LangChain
   - **Containerization:** Docker
   - **Local LLMs:** Ollama
 
-## Quick Start
+-----
 
-### 1. Prerequisites
+## 🚀 Getting Started
 
-  - [Docker](https://www.docker.com/) is installed and running.
-  - [Ollama](https://ollama.com/) is installed (for using local models).
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
-### 2. Environment Setup
+### 📋 Prerequisites
 
-```bash
-# Clone the repository (if you haven't already)
-# git clone <repository_url>
-# cd ai_developer_assistant_final
+Ensure the following software is installed and running:
 
-# 1. Create your environment file from the example
-cp .env.example .env
+  * **[Docker](https://www.docker.com/):** Required to run the application in an isolated environment.
+  * **[Ollama](https://ollama.com/):** (Optional, but recommended) To use local AI models.
 
-# 2. Edit the .env file to add your API keys and set your AI_ASSISTANT_WORKSPACE
-nano .env
+### ⚙️ Installation
 
-# 3. If using Ollama, start the service in a separate terminal
-# OLLAMA_HOST=0.0.0.0 ollama serve
-```
+Follow these steps to set up the project environment:
 
-### 3. Build and Run
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/erisonsuzuki/langchain_study.git
+    cd langchain_study
+    ```
+2.  **Configure environment variables:**
+    ```bash
+    cp .env.example .env
+    ```
+    Edit the `.env` file to add your API keys (if using cloud providers) and set the `AI_ASSISTANT_WORKSPACE`.
+3.  **Start the Ollama service (if using local models):**
+    Open a separate terminal and run:
+    ```bash
+    OLLAMA_HOST=0.0.0.0 ollama serve
+    ```
+4.  **Build and run the project with Docker:**
+    ```bash
+    # Build the Docker image (only needed the first time or when dependencies change)
+    make build
 
-Use the Makefile to manage the application lifecycle.
+    # Start the server in the background
+    make start-d
 
-```bash
-# Build the Docker image (only needs to be done once or when dependencies change)
-make build
+    # Check the logs to ensure the application started correctly
+    make logs
+    ```
 
-# Start the server in the background
-make start-d
+The API will now be running at `http://localhost:8000`. The interactive API documentation (Swagger UI) is available at `http://localhost:8000/docs`.
 
-# Check the logs to ensure it started correctly
-make logs
-```
+-----
 
-The API is now running at `http://localhost:8000`. You can see the interactive API documentation at `http://localhost:8000/docs`.
+## 👨‍💻 Usage
 
-## Recommended Models & Configuration
+You can interact with the `AI Developer Assistant` in two ways: through the simple `Makefile` CLI interface or by making direct HTTP requests to the API.
 
-This assistant is provider-agnostic. You can configure it to use powerful local models via Ollama for privacy and cost-savings, or cutting-edge cloud models for maximum performance.
+### 1\. Via `Makefile` (Recommended for daily use)
 
-### Model Recommendations (Ollama vs. Cloud)
-
-This table maps each agent/task within the assistant to the recommended local Ollama model and its high-performance cloud equivalents. You can configure these in your `.env` file using the task-specific override variables (e.g., `PLANNING_MODEL_IDENTIFIER`).
-
-| Task / Agent | Primary Function | 🏆 Recommended Ollama Model | ☁️ Cloud Equivalents (OpenAI / Google) |
-| :--- | :--- | :--- | :--- |
-| **Planning Service** | Generates technical plans and user stories from a high-level description. | `llama3:8b` | `gpt-4o` / `gemini-1.5-pro` |
-| **Documentation Service** | Summarizes code files and generates a complete `README.md`. | `llama3:8b` | `gpt-4o` / `gemini-1.5-pro` |
-| **Analysis Service** | Analyzes code files for adherence to best practices. | `codegemma` | `gpt-4o` / `gemini-1.5-pro` |
-| **Editing Service** | Acts as an autonomous agent to read, write, and modify files. | `llama3.1:8b` | `gpt-4o` / `gemini-1.5-pro` |
-
-### How to Configure Models in `.env`
-
-You control which model is used for each task in your `.env` file.
-
-**1. Set the Global Default**
-This is the model that will be used for any task if no specific override is set. It's great for general use.
-
-```ini
-# .env
-# Use a fast local model as the default for most tasks.
-DEFAULT_PROVIDER=OLLAMA
-DEFAULT_MODEL_NAME=llama3:8b
-```
-
-**2. Set Task-Specific Overrides (Recommended)**
-For the best results, use the optional override variables to assign a specialized model to a specific task.
-
-```ini
-# .env
-# Use the global default (Ollama Llama3) for most things, but...
-
-# ...use OpenAI's powerful GPT-4o specifically for documentation generation.
-DOCS_MODEL_IDENTIFIER=OPENAI:gpt-4o
-
-# ...and use Ollama's specialized CodeGemma for all code analysis tasks.
-ANALYSIS_MODEL_IDENTIFIER=OLLAMA:codegemma
-```
-
-With this configuration, `make plan` would use `llama3:8b`, while `make docs` would use `gpt-4o`, giving you the best of both worlds.
-
-## Usage
-
-There are two primary ways to interact with the AI Assistant: via the convenient `Makefile` interface for daily tasks, or by making direct HTTP requests to the API for external integrations.
-
-### 1\. Interacting via Makefile (Recommended for Daily Use)
-
-The `Makefile` provides a simple, memorable set of commands that act as a "control panel" for the assistant. All complex Docker and API calls are handled for you.
-
-First, see all available commands by running:
+The `Makefile` acts as a "control panel," abstracting the complexity of API calls and Docker commands. To see all available commands, run:
 
 ```bash
 make help
 ```
 
-#### Common Task Examples:
+#### Usage examples:
 
 **To plan a new feature:**
-The command constructs the necessary JSON payload and calls the `/tasks/planning` endpoint.
 
 ```bash
 make plan desc="Create a user authentication system with password reset"
 ```
 
 **To analyze a specific code file:**
-Remember to use the path **inside the container**, which is prefixed with `/workspace`. This path corresponds to the `AI_ASSISSTANT_WORKSPACE` you set in your `.env` file.
 
 ```bash
 make analyze file="/workspace/my-ruby-app/lib/user.rb"
@@ -143,51 +117,16 @@ make docs path="/workspace/my-ruby-app"
 ```
 
 **To instruct the code-editing agent:**
-This command dispatches the autonomous agent to perform a complex task.
 
 ```bash
 make edit instruction="Refactor the User class in user.py to include a new 'last_login' timestamp field"
 ```
 
-### 2\. External & Direct API Interaction (Advanced)
+### 2\. Via Direct HTTP Requests (Advanced)
 
-Any external application (CI/CD pipelines, other microservices, custom scripts) can use the assistant by making standard HTTP requests with a tool like `curl`.
+Any external application can use the assistant by making standard HTTP requests.
 
-#### Step 1: Run the Server with the Target Workspace
-
-First, you must start the server and mount the external project directory you want to work on. The `Makefile` helps with this.
-
-Let's say your other project is located at `~/dev/external-project` on your host machine.
-
-```bash
-# Start the assistant, mounting the external project into the container's /workspace
-make start-d path=~/dev/external-project
-```
-
-Now, the AI assistant is running and has access to the files in `~/dev/external-project` via the `/workspace` directory inside the container.
-
-#### Step 2: Call the API using `curl`
-
-Now you can use `curl` or any other HTTP client to call the API. You must use the in-container path.
-
-**Example: Running the `analysis` task on an external file**
-
-This command calls the generic `/tasks/analysis` endpoint, passing the file path inside the `data` object.
-
-```bash
-curl -X 'POST' \
-  'http://localhost:8000/tasks/analysis' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "data": {
-      "file_path": "/workspace/src/main.py"
-    }
-  }'
-```
-
-**Example: Planning a feature with a specific model override**
-
-This command calls the `/tasks/planning` endpoint and temporarily overrides the default model to use OpenAI's GPT-4o for this specific request.
+**Example: Planning a feature with a model override**
 
 ```bash
 curl -X 'POST' \
@@ -201,6 +140,29 @@ curl -X 'POST' \
   }'
 ```
 
-## Project Documentation
+-----
 
-This project's evolution, architectural decisions, and the step-by-step process of its creation are documented in detail within the `docs/` directory.
+## ⚙️ Model Configuration
+
+This assistant is provider-agnostic. You can configure it to use powerful local models via **Ollama** for privacy and cost savings, or cutting-edge cloud models for maximum performance.
+
+The table below suggests models for each task and how to configure them in your `.env` file:
+
+| Task / Agent | Primary Function | 🏆 Recommended Ollama Model | ☁️ Cloud Equivalents (OpenAI / Google) |
+| :--- | :--- | :--- | :--- |
+| **Planning Service** | Generates technical plans and user stories. | `llama3:8b` | `gpt-4o` / `gemini-1.5-pro` |
+| **Documentation Service** | Summarizes code and generates a `README.md`. | `llama3:8b` | `gpt-4o` / `gemini-1.5-pro` |
+| **Analysis Service** | Analyzes code for best practices. | `codegemma` | `gpt-4o` / `gemini-1.5-pro` |
+| **Editing Service** | Autonomous agent for reading and modifying files. | `llama3.1:8b` | `gpt-4o` / `gemini-1.5-pro` |
+
+-----
+
+## 🤝 Contribution
+
+Contributions are what make the open-source community an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1.  Fork the Project.
+2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
+3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
+4.  Push to the Branch (`git push origin feature/AmazingFeature`).
+5.  Open a Pull Request.
