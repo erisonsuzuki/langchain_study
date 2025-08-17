@@ -70,6 +70,10 @@ edit: ## Instruct the AI agent to edit code. Usage: make edit instruction="Your 
 	@echo "Dispatching code editing agent..."
 	@${API_CLIENT} editing '{"instruction": "${instruction}"}' $(if ${model},--model ${model},)
 
+optimizer: ## Optimizes a raw prompt. Usage: make optimizer prompt="your raw prompt".
+	@echo "Running prompt optimizer..."
+	@${API_CLIENT} optimizer '{"raw_prompt": "${prompt}"}' $(if ${model},--model ${model},)
+	
 # --- Help Command ---
 .PHONY: help
 help: ## Show this help message.

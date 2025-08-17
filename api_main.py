@@ -11,12 +11,14 @@ from services.planning_service import PlanningService, PlanRequest
 from services.docs_service import DocsService, DocsRequest
 from services.analysis_service import AnalysisService, AnalyzeRequest
 from services.editing_service import EditingService, EditRequest
+from services.optimizer_service import OptimizerService, OptimizerRequest 
 
 TASK_REGISTRY = {
     "planning": (PlanningService, PlanRequest),
     "documentation": (DocsService, DocsRequest),
     "analysis": (AnalysisService, AnalyzeRequest),
     "editing": (EditingService, EditRequest),
+    "optimizer": (OptimizerService, OptimizerRequest),
 }
 
 # --- Generic Request Models ---
