@@ -1,15 +1,14 @@
-# services/optimizer_service.py
 from pydantic import BaseModel
 from typing import Optional
 from langchain_core.output_parsers import StrOutputParser
 
 from .base_service import AbstractTaskService
 from core.exceptions import ServiceExecutionError
+from config.prompt_loader import get_prompt_template_for_task
+from config.llm_providers import get_llm_instance
 from config.settings import (
     resolve_model_for_task,
     get_llm_settings_for_task,
-    get_llm_instance,
-    get_prompt_template_for_task,
 )
 
 class OptimizerRequest(BaseModel):

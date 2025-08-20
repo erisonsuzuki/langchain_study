@@ -1,7 +1,7 @@
 # api_main.py
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from typing import Dict, Any
 
 from core.exceptions import ServiceExecutionError
@@ -47,9 +47,9 @@ async def execute_task(task_name: str, request: GenericTaskRequest):
     ServiceClass, RequestModel = TASK_REGISTRY[task_name]
     try:
         task_data = RequestModel(**request.data)
-    except Exception as e:
+    except ValidationError as e:
         return JSONResponse(status_code=422, content={"error": "Invalid data for the specified task.", "detail": str(e)})
 
     service_instance = ServiceClass(task_name)
-    result = service_instance.execute(model_override=request.model, **task_data.dict())
+    result = service_instance.execute(model_override=request.model, **task_data.model_dump())
     return result

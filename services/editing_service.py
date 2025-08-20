@@ -1,4 +1,3 @@
-# services/editing_service.py
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 from langchain import hub
@@ -6,11 +5,11 @@ from langchain.agents import AgentExecutor, create_react_agent
 
 from .base_service import AbstractTaskService
 from core.exceptions import ServiceExecutionError
+from config.prompt_loader import get_prompt_template_for_task
+from config.llm_providers import get_llm_instance
 from config.settings import (
     resolve_model_for_task,
     get_llm_settings_for_task,
-    get_llm_instance,
-    get_prompt_template_for_task,
 )
 # Import the tools the agent can use from our tools module
 from tools.filesystem_tools import list_files, read_file, write_file

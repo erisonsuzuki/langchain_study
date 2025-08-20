@@ -1,16 +1,14 @@
-# services/docs_service.py
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser, PydanticOutputParser
-# ... other imports
 from .base_service import AbstractTaskService
 from core.exceptions import ServiceExecutionError
+from config.prompt_loader import get_prompt_template_for_task
+from config.llm_providers import get_llm_instance
 from config.settings import (
     resolve_model_for_task,
     get_llm_settings_for_task,
-    get_llm_instance,
-    get_prompt_template_for_task,
 )
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 
